@@ -26,8 +26,3 @@ sws
 
 Follow the interactive prompts to configure your new Shopware 6 plugin.
 
-## Features
-...
-  - CLI Commands
-  - Custom Config (config.xml)
-
