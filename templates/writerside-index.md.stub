@@ -1,0 +1,18 @@
+# {{pluginTitle}} Documentation
+
+Welcome to the documentation for **{{pluginTitle}}**.
+
+## Overview
+
+{{description}}
+
+## Installation
+
+1. Upload the plugin folder to `custom/plugins/`
+2. Run `bin/console plugin:install --activate {{pluginName}}`
+
+## Configuration
+
+Describe your plugin configuration here.
+
+{{docsDevelopment}}

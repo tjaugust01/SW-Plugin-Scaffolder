@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/Framework/Plugin/Composer/schema/plugin.xsd">
+    <label>{{pluginTitle}}</label>
+    <label lang="de-DE">{{pluginTitle}}</label>
+
+    <description>{{description}}</description>
+    <description lang="de-DE">{{description}}</description>
+
+    <version>1.0.0</version>
+    <copyright>Copyright (c) {{year}} {{author}}</copyright>
+    <license>MIT</license>
+    <author>{{author}}</author>
+
+    <compatibility minVersion="{{minShopwareVersion}}" maxVersion="6.9"/>
+</plugin>

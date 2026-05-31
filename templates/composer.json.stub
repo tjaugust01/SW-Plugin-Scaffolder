@@ -1,0 +1,30 @@
+{
+    "name": "{{composerPackageName}}",
+    "description": "{{description}}",
+    "type": "shopware-platform-plugin",
+    "authors": [
+        {
+            "name": "{{author}}",
+            "email": "{{email}}"
+        }
+    ],
+    "require": {
+        "shopware/core": "~{{minShopwareVersion}}"
+    },
+    "extra": {
+        "shopware-plugin-class": "{{namespaceEscaped}}\\{{pluginName}}",
+        "label": {
+            "de-DE": "{{pluginTitle}}",
+            "en-GB": "{{pluginTitle}}"
+        },
+        "description": {
+            "de-DE": "{{description}}",
+            "en-GB": "{{description}}"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "{{namespaceEscaped}}\\": "src/"
+        }
+    }
+}

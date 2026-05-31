@@ -1,0 +1,11 @@
+// {{pluginTitle}} - Administration entry point
+import './extension/sw-first-test'; // Example import
+
+Shopware.Module.register('{{pluginName}}-module', {
+    type: 'plugin',
+    name: '{{pluginName}}',
+    title: '{{pluginTitle}}',
+    description: '{{description}}',
+    color: '#ff3d58',
+    icon: 'default-shopping-paper-bag-product',
+});

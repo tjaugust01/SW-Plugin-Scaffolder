@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PHPStan: Analyze" type="PhpRemoteInterpreterRunConfigurationType" factoryName="PHP Remote Debug">
+    <option name="interpreterName" value="Docker: Dockware" />
+    <option name="scriptName" value="$PROJECT_DIR$/vendor/bin/phpstan" />
+    <option name="scriptParameters" value="analyse" />
+    <method v="2" />
+  </configuration>
+</component>

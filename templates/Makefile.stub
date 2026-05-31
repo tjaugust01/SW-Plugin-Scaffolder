@@ -1,0 +1,15 @@
+.PHONY: test stan fix install
+
+install:
+	composer install
+
+test:
+	php vendor/bin/phpunit
+
+stan:
+	php vendor/bin/phpstan analyse
+
+fix:
+	php vendor/bin/php-cs-fixer fix src
+
+{{makefileExtensions}}

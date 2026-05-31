@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  shopware:
+    image: dockware/dev:6.7.2.2
+    container_name: shopware-scaffolding
+    # TTY und STDIN halten den Container am Leben
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    ports:
+      - "8000:80"     # Shopware Web (http://localhost:8000)
+      - "8443:443"    # SSL (https://localhost:8443)
+      - "8888:8888"   # Admin Watcher
+      - "9999:9999"   # Storefront Watcher
+      - "9003:9003"   # Xdebug
+    environment:
+      - XDEBUG_ENABLED=1
+    volumes:
+      - .:/var/www/html/custom/plugins/shopware-scaffolding
