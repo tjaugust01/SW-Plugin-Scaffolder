@@ -3,7 +3,7 @@
 namespace ShopwareScaffolding\Generator;
 
 use ShopwareScaffolding\Config\PluginConfig;
-use ShopwareScaffolding\Template\TemplateRenderer;
+use ShopwareScaffolding\Service\TemplateRenderer;
 
 class PluginGenerator
 {
