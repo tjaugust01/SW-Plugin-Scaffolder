@@ -24,6 +24,8 @@ class PluginConfig
     public bool $withWriterside = false;
     public bool $withGithubActions = false;
     public bool $withMakefile = false;
+    public bool $withGitRepository = false;
+    public GitBranchNamingConvention $gitBranchNamingConvention = GitBranchNamingConvention::VersionOnly;
 
     // Architektur
     public bool $withAdminExtension = false;

@@ -2,6 +2,7 @@
 
 namespace ShopwareScaffolding\Generator;
 
+use RuntimeException;
 use ShopwareScaffolding\Config\PluginConfig;
 use ShopwareScaffolding\Service\TemplateRenderer;
 
@@ -22,27 +23,30 @@ class PluginGenerator
     public function generate(): void
     {
         if (empty($this->config->shopwareVersions)) {
-            throw new \RuntimeException('No Shopware versions selected.');
+            throw new RuntimeException('No Shopware versions selected.');
         }
 
         $isMultiVersion = count($this->config->shopwareVersions) > 1;
 
         if ($isMultiVersion) {
+            $mainBranchName = $this->config
+                ->gitBranchNamingConvention
+                ->branchNameForNewestVersion($this->config->shopwareVersions[0]);
+
             $this->runGitCommand('init');
-            $this->runGitCommand('checkout -b master');
-            $this->runGitCommand('config user.email "scaffolder@example.com"');
-            $this->runGitCommand('config user.name "Shopware Scaffolder"');
+            $this->runGitCommand(sprintf('checkout -b %s', escapeshellarg($mainBranchName)));
         }
 
-        // shopwareVersions is already sorted highest first in Command
-        // So the first one is for 'master'
         foreach ($this->config->shopwareVersions as $index => $version) {
             $this->currentShopwareVersion = $version;
-            $branchName = ($index === 0) ? 'master' : $version;
+
+            $branchName = $index === 0
+                ? $this->config->gitBranchNamingConvention->branchNameForNewestVersion($version)
+                : $version;
 
             if ($isMultiVersion) {
                 if ($index > 0) {
-                    $this->runGitCommand("checkout -b {$branchName}");
+                    $this->runGitCommand(sprintf('checkout -b %s', escapeshellarg($branchName)));
                 }
             }
 
@@ -52,16 +56,16 @@ class PluginGenerator
 
             if ($isMultiVersion) {
                 $this->runGitCommand('add .');
-                $this->runGitCommand("commit -m \"Scaffold plugin for Shopware {$version}\"");
+                $this->runGitCommand(sprintf('commit -m %s', escapeshellarg("Scaffold plugin for Shopware {$version}")));
 
                 if ($index < count($this->config->shopwareVersions) - 1) {
-                    $this->runGitCommand('checkout master');
+                    $this->runGitCommand(sprintf('checkout %s', escapeshellarg($mainBranchName)));
                 }
             }
         }
 
         if ($isMultiVersion) {
-            $this->runGitCommand('checkout master');
+            $this->runGitCommand(sprintf('checkout %s', escapeshellarg($mainBranchName)));
         }
     }
 

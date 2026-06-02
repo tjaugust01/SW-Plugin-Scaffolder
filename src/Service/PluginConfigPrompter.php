@@ -2,15 +2,19 @@
 
 namespace ShopwareScaffolding\Service;
 
+use RuntimeException;
+use ShopwareScaffolding\Config\GitBranchNamingConvention;
 use ShopwareScaffolding\Config\PluginConfig;
 use ShopwareScaffolding\Service\Util\DockwareTagResolver;
+use ShopwareScaffolding\Service\Util\ShopwareVersionFetcher;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PluginConfigPrompter
 {
     public function __construct(
         private readonly DockwareTagResolver $dockwareTagResolver = new DockwareTagResolver(),
-    ) {
+    )
+    {
     }
 
     public function ask(SymfonyStyle $io): PluginConfig
@@ -50,16 +54,42 @@ class PluginConfigPrompter
         $config->author = $io->ask('Author', '');
         $config->email = $io->ask('E-Mail', '');
 
-        $availableVersions = ['6.5', '6.6', '6.7'];
-        $config->shopwareVersions = $io->choice(
-            'Shopware Versions (comma separated for multiple)',
-            $availableVersions,
-            '6.6',
-            true
-        );
+        $multiVersion = $io->confirm('Multi-Shopware Version Support?', false);
+        if ($multiVersion) {
+            $config->withGitRepository = true;
+            try {
+                $io->note('Fetching latest Shopware versions...');
+                $versions = ShopwareVersionFetcher::fetchMajorVersion();
+            }catch (RuntimeException $e) {
+                $io->warning('Failed to fetch Shopware versions, using defaults.');
+                $versions = ['6.5', '6.6', '6.7'];
+            }
+            $config->shopwareVersions = $io->choice(
+                'Shopware Versions (comma separated for multiple)',
+                $versions,
+                '6.6',
+                true
+            );
 
-        usort($config->shopwareVersions, 'version_compare');
-        $config->shopwareVersions = array_reverse($config->shopwareVersions);
+            usort($config->shopwareVersions, 'version_compare');
+            $config->shopwareVersions = array_reverse($config->shopwareVersions);
+
+            $choice = $io->choice(
+                'Git Branch Naming Convention',
+                [
+                    GitBranchNamingConvention::Main->value => GitBranchNamingConvention::Main->label(),
+                    GitBranchNamingConvention::Latest->value => GitBranchNamingConvention::Latest->label(),
+                    GitBranchNamingConvention::Master->value => GitBranchNamingConvention::Master->label(),
+                    GitBranchNamingConvention::VersionOnly->value => GitBranchNamingConvention::VersionOnly->label(),
+                ],
+                GitBranchNamingConvention::VersionOnly->value
+            );
+
+            $config->gitBranchNamingConvention = GitBranchNamingConvention::from($choice);
+
+        } else {
+            $config->withGitRepository = $io->confirm('Create Git Repository?', true);
+        }
 
         $this->askDevTooling($io, $config);
         $this->askPluginArchitecture($io, $config);
