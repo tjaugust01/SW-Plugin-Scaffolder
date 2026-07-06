@@ -1,4 +1,5 @@
 {
+    "_comment": "Documentation: https://developer.shopware.com/docs/guides/plugins/plugins/dependencies/add-plugin-dependencies.html",
     "name": "{{composerPackageName}}",
     "description": "{{description}}",
     "type": "shopware-platform-plugin",
@@ -21,7 +22,7 @@
             "de-DE": "{{description}}",
             "en-GB": "{{description}}"
         }
-    },
+    ],
     "autoload": {
         "psr-4": {
             "{{namespaceEscaped}}\\": "src/"

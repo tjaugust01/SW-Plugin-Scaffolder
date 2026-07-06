@@ -1,0 +1,30 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Command;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+/**
+ * Custom Console Command for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/plugin-fundamentals/add-custom-commands.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+#[AsCommand(
+    name: '{{cliCommandName}}',
+    description: 'An example CLI command for {{pluginName}}'
+)]
+class {{pluginName}}Command extends Command
+{
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $io->success('Command from {{pluginName}} executed successfully!');
+
+        return Command::SUCCESS;
+    }
+}

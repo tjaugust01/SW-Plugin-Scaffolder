@@ -10,6 +10,7 @@ class PluginGenerator
     private readonly TemplateRenderer $renderer;
     private readonly string $stubsDirectory;
     private string $currentShopwareVersion = '';
+    private string $migrationTimestamp = '';
 
     public function __construct(
         private readonly PluginConfig $config,
@@ -17,6 +18,7 @@ class PluginGenerator
     ) {
         $this->renderer = new TemplateRenderer();
         $this->stubsDirectory = dirname(__DIR__, 2) . '/templates';
+        $this->migrationTimestamp = (string) time();
     }
 
     public function generate(): void
@@ -140,6 +142,32 @@ class PluginGenerator
         if ($this->config->withMakefile) {
             $this->writeStub('Makefile.stub', 'Makefile');
         }
+
+        if ($this->config->withDatabase || $this->config->fullScaffolding) {
+            $entityDir = "src/Core/Content/{$this->config->pluginName}Entity";
+            $this->writeStub('Entity.php.stub', "{$entityDir}/{$this->config->pluginName}Entity.php");
+            $this->writeStub('EntityCollection.php.stub', "{$entityDir}/{$this->config->pluginName}Collection.php");
+            $this->writeStub('EntityDefinition.php.stub', "{$entityDir}/{$this->config->pluginName}Definition.php");
+            $this->writeStub('Migration.php.stub', "src/Migration/Migration{$this->migrationTimestamp}.php");
+        }
+
+        if ($this->config->withCustomConfig || $this->config->fullScaffolding) {
+            $this->writeStub('config.xml.stub', 'src/Resources/config/config.xml');
+        }
+
+        if ($this->config->withScheduledTask || $this->config->fullScaffolding) {
+            $taskDir = 'src/ScheduledTask';
+            $this->writeStub('ScheduledTask.php.stub', "{$taskDir}/{$this->config->pluginName}Task.php");
+            $this->writeStub('ScheduledTaskHandler.php.stub', "{$taskDir}/{$this->config->pluginName}TaskHandler.php");
+        }
+
+        if ($this->config->withEventSubscriber || $this->config->fullScaffolding) {
+            $this->writeStub('Subscriber.php.stub', "src/Subscriber/{$this->config->pluginName}Subscriber.php");
+        }
+
+        if ($this->config->withCliCommand || $this->config->fullScaffolding) {
+            $this->writeStub('Command.php.stub', "src/Command/{$this->config->pluginName}Command.php");
+        }
     }
 
     private function generateDirectoryStructure(): void
@@ -166,6 +194,11 @@ class PluginGenerator
 
         if ($this->config->withScheduledTask || $this->config->fullScaffolding) {
             $directories[] = 'src/ScheduledTask';
+        }
+
+        if ($this->config->withDatabase || $this->config->fullScaffolding) {
+            $directories[] = 'src/Core/Content';
+            $directories[] = 'src/Migration';
         }
 
         if ($this->config->fullScaffolding) {
@@ -221,21 +254,106 @@ class PluginGenerator
             $docsDevelopment .= "3. Your plugin is automatically mapped to the Dockware container.\n\n";
         }
 
+        $isLegacyScheduledTask = version_compare($this->currentShopwareVersion, '6.6', '<');
+
+        $services = [];
+        if ($this->config->withDatabase || $this->config->fullScaffolding) {
+            $services[] = '        <service id="' . $this->config->namespace . '\\Core\\Content\\' . $this->config->pluginName . 'Entity\\' . $this->config->pluginName . 'Definition">';
+            $services[] = '            <tag name="shopware.entity.definition" entity="' . $this->buildEntityNameSnakeCase() . '" />';
+            $services[] = '        </service>';
+        }
+        if ($this->config->withScheduledTask || $this->config->fullScaffolding) {
+            $services[] = '        <service id="' . $this->config->namespace . '\\ScheduledTask\\' . $this->config->pluginName . 'Task">';
+            $services[] = '            <tag name="shopware.scheduled.task" />';
+            $services[] = '        </service>';
+            $services[] = '        <service id="' . $this->config->namespace . '\\ScheduledTask\\' . $this->config->pluginName . 'TaskHandler">';
+            $services[] = '            <argument type="service" id="scheduled_task.repository" />';
+            if ($isLegacyScheduledTask) {
+                $services[] = '            <tag name="scheduled_task.handler" />';
+            } else {
+                $services[] = '            <tag name="messenger.message_handler" />';
+            }
+            $services[] = '        </service>';
+        }
+        if ($this->config->withEventSubscriber || $this->config->fullScaffolding) {
+            $services[] = '        <service id="' . $this->config->namespace . '\\Subscriber\\' . $this->config->pluginName . 'Subscriber">';
+            $services[] = '            <tag name="kernel.event_subscriber" />';
+            $services[] = '        </service>';
+        }
+        if ($this->config->withCliCommand || $this->config->fullScaffolding) {
+            $services[] = '        <service id="' . $this->config->namespace . '\\Command\\' . $this->config->pluginName . 'Command">';
+            $services[] = '            <tag name="console.command" />';
+            $services[] = '        </service>';
+        }
+
+        if ($isLegacyScheduledTask) {
+            $taskHandlerImports = "use Shopware\\Core\\Framework\\DataAbstractionLayer\\EntityRepository;\nuse Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\ScheduledTaskHandler;";
+            
+            $taskHandlerClassDefinition = "class " . $this->config->pluginName . "TaskHandler extends ScheduledTaskHandler\n{\n" .
+                "    public function __construct(EntityRepository \$scheduledTaskRepository)\n" .
+                "    {\n" .
+                "        parent::__construct(\$scheduledTaskRepository);\n" .
+                "    }\n\n" .
+                "    public static function getHandledMessages(): iterable\n" .
+                "    {\n" .
+                "        return [" . $this->config->pluginName . "Task::class];\n" .
+                "    }\n\n" .
+                "    public function run(): void\n" .
+                "    {\n" .
+                "        // Do the scheduled task work here\n" .
+                "    }\n" .
+                "}";
+        } else {
+            $taskHandlerImports = "use Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\AbstractScheduledTaskHandler;\nuse Symfony\\Component\\Messenger\\Attribute\\AsMessageHandler;";
+            
+            $taskHandlerClassDefinition = "#[AsMessageHandler(handles: " . $this->config->pluginName . "Task::class)]\n" .
+                "class " . $this->config->pluginName . "TaskHandler extends AbstractScheduledTaskHandler\n{\n" .
+                "    public function run(): void\n" .
+                "    {\n" .
+                "        // Do the scheduled task work here\n" .
+                "    }\n" .
+                "}";
+        }
+
         return [
-            'pluginName'          => $this->config->pluginName,
-            'pluginTitle'         => $this->config->pluginTitle,
-            'namespace'           => $this->config->namespace,
-            'namespaceEscaped'    => str_replace('\\', '\\\\', $this->config->namespace),
-            'composerPackageName' => $this->config->getComposerPackageName(),
-            'description'         => $this->config->description,
-            'author'              => $this->config->author,
-            'email'               => $this->config->email,
-            'minShopwareVersion'  => $this->currentShopwareVersion,
-            'dockwareTag'         => $this->config->dockwareTags[$this->currentShopwareVersion] ?? 'latest',
-            'year'                => (string) date('Y'),
-            'makefileExtensions'  => rtrim($makefileExtensions),
-            'docsDevelopment'     => rtrim($docsDevelopment),
+            'pluginName'                 => $this->config->pluginName,
+            'pluginTitle'                => $this->config->pluginTitle,
+            'namespace'                  => $this->config->namespace,
+            'namespaceEscaped'           => str_replace('\\', '\\\\', $this->config->namespace),
+            'composerPackageName'        => $this->config->getComposerPackageName(),
+            'description'                => $this->config->description,
+            'author'                     => $this->config->author,
+            'email'                      => $this->config->email,
+            'minShopwareVersion'         => $this->currentShopwareVersion,
+            'dockwareTag'                => $this->config->dockwareTags[$this->currentShopwareVersion] ?? 'latest',
+            'year'                       => (string) date('Y'),
+            'makefileExtensions'         => rtrim($makefileExtensions),
+            'docsDevelopment'            => rtrim($docsDevelopment),
+            'services'                   => implode("\n", $services),
+            'entityNameSnakeCase'        => $this->buildEntityNameSnakeCase(),
+            'cliCommandName'             => $this->buildCliCommandName(),
+            'taskName'                   => $this->buildTaskName(),
+            'migrationTimestamp'         => $this->migrationTimestamp,
+            'taskHandlerImports'         => $taskHandlerImports,
+            'taskHandlerClassDefinition' => $taskHandlerClassDefinition,
         ];
+    }
+
+    private function buildEntityNameSnakeCase(): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->config->pluginName));
+    }
+
+    private function buildCliCommandName(): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $this->config->pluginName)) . ':example';
+    }
+
+    private function buildTaskName(): string
+    {
+        $vendor = strtolower($this->config->getVendorName());
+        $plugin = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->config->pluginName));
+        return "{$vendor}.{$plugin}.example_task";
     }
 
     private function runGitCommand(string $command): void

@@ -135,16 +135,17 @@ class CreatePluginCommand extends Command
             return Command::SUCCESS;
         }
 
-        if (!is_dir($targetDirectory)) {
-            if (!mkdir($targetDirectory, 0777, true) && !is_dir($targetDirectory)) {
-                $io->error(sprintf('Directory "%s" was not created', $targetDirectory));
+        $pluginTargetDirectory = $targetDirectory . DIRECTORY_SEPARATOR . $config->pluginName;
+
+        if (!is_dir($pluginTargetDirectory)) {
+            if (!mkdir($pluginTargetDirectory, 0777, true) && !is_dir($pluginTargetDirectory)) {
+                $io->error(sprintf('Directory "%s" was not created', $pluginTargetDirectory));
                 return Command::FAILURE;
             }
         }
 
-
         try {
-            $generator = new PluginGenerator($config, $targetDirectory);
+            $generator = new PluginGenerator($config, $pluginTargetDirectory);
             $generator->generate();
         } catch (\RuntimeException $e) {
             $io->error($e->getMessage());

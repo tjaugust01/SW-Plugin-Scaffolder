@@ -1,0 +1,47 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Core\Content\{{pluginName}}Entity;
+
+use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\CustomFields;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
+use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+
+/**
+ * Data Abstraction Layer Entity Definition for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/framework/data-handling/add-custom-complex-data.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+class {{pluginName}}Definition extends EntityDefinition
+{
+    public const ENTITY_NAME = '{{entityNameSnakeCase}}';
+
+    public function getEntityName(): string
+    {
+        return self::ENTITY_NAME;
+    }
+
+    public function getEntityClass(): string
+    {
+        return {{pluginName}}Entity::class;
+    }
+
+    public function getCollectionClass(): string
+    {
+        return {{pluginName}}Collection::class;
+    }
+
+    protected function defineFields(): FieldCollection
+    {
+        return new FieldCollection([
+            (new IdField('id', 'id'))->addFlags(new PrimaryKey(), new Required(), new ApiAware()),
+            (new StringField('name', 'name'))->addFlags(new Required(), new ApiAware()),
+            (new CustomFields())->addFlags(new ApiAware()),
+        ]);
+    }
+}

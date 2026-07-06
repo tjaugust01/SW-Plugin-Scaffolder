@@ -1,0 +1,31 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Core\Content\{{pluginName}}Entity;
+
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCustomFieldsTrait;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
+
+/**
+ * Data Abstraction Layer Entity for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/framework/data-handling/add-custom-complex-data.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+class {{pluginName}}Entity extends Entity
+{
+    use EntityIdTrait;
+    use EntityCustomFieldsTrait;
+
+    protected ?string $name = null;
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+}

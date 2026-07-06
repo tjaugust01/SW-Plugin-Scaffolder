@@ -4,6 +4,9 @@ namespace {{namespace}};
 
 use Shopware\Core\Framework\Plugin;
 
+/**
+ * Base plugin class for {{pluginName}}.
+ */
 class {{pluginName}} extends Plugin
 {
 }

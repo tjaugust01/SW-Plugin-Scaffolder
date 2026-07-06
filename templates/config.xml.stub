@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Custom configuration for {{pluginName}}.
+    @see https://developer.shopware.com/docs/guides/plugins/plugins/plugin-fundamentals/add-plugin-configuration
+    @version Shopware {{minShopwareVersion}}
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Basic Configuration</title>
+        <title de-DE="Grundeinstellungen">Grundeinstellungen</title>
+
+        <input-field type="bool">
+            <name>active</name>
+            <label>Active</label>
+            <label de-DE="Aktiv">Aktiv</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>exampleString</name>
+            <label>Example String</label>
+            <label de-DE="Beispieltext">Beispieltext</label>
+            <defaultValue>Hello World</defaultValue>
+        </input-field>
+    </card>
+</config>

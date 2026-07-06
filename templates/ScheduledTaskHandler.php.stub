@@ -1,0 +1,13 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\ScheduledTask;
+
+{{taskHandlerImports}}
+
+/**
+ * Scheduled Task Handler for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/hosting/infrastructure/scheduled-task.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+{{taskHandlerClassDefinition}}

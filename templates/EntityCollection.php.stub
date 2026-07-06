@@ -1,0 +1,22 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Core\Content\{{pluginName}}Entity;
+
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
+
+/**
+ * Data Abstraction Layer Entity Collection for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/framework/data-handling/add-custom-complex-data.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+/**
+ * @extends EntityCollection<{{pluginName}}Entity>
+ */
+class {{pluginName}}Collection extends EntityCollection
+{
+    protected function getExpectedClass(): string
+    {
+        return {{pluginName}}Entity::class;
+    }
+}

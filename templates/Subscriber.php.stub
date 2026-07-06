@@ -1,0 +1,28 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Subscriber;
+
+use Shopware\Core\Content\Product\ProductEvents;
+use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+/**
+ * Event Subscriber for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/framework/event/listening-to-events.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+class {{pluginName}}Subscriber implements EventSubscriberInterface
+{
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            ProductEvents::PRODUCT_WRITTEN_EVENT => 'onProductWritten',
+        ];
+    }
+
+    public function onProductWritten(EntityWrittenEvent $event): void
+    {
+        // Do something when products are written
+    }
+}
