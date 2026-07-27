@@ -2,8 +2,8 @@
 
 namespace ShopwareScaffolding\Command;
 
-use ShopwareScaffolding\Config\PluginConfig;
 use ShopwareScaffolding\Generator\PluginGenerator;
+use ShopwareScaffolding\Service\PluginConfigPrompter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,6 +14,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'create:plugin')]
 class CreatePluginCommand extends Command
 {
+    public function __construct(
+        private readonly PluginConfigPrompter $configPrompter = new PluginConfigPrompter(),
+    ) {
+        parent::__construct();
+    }
+
     protected function configure(): void
     {
         $this
@@ -36,91 +42,36 @@ class CreatePluginCommand extends Command
         $io->title('Shopware 6 Plugin Scaffolding');
         $io->note(sprintf('Target directory: %s', $targetDirectory));
 
-        $config = new PluginConfig();
+        $config = $this->configPrompter->ask($io);
 
-        $io->section('Plugin Metadata');
+        $this->showSummary($io, $config);
 
-        $config->pluginTitle = $io->ask('Plugin Title', 'My Awesome Plugin');
+        if (!$io->confirm('Generate plugin now?', true)) {
+            $io->warning('Aborted.');
 
-        $config->pluginName = $io->ask('Plugin Name (PascalCase, used for classname & folder)', 'MyAwesomePlugin', function (string $value): string {
-            if (!preg_match('/^[A-Z][a-zA-Z0-9]+$/', $value)) {
-                throw new \InvalidArgumentException('Plugin name must be PascalCase (e.g. MyAwesomePlugin)');
-            }
-            return $value;
-        });
-
-        $vendorName = $io->ask('Vendor Name (PascalCase)', 'MyVendor', function (string $value): string {
-            if (!preg_match('/^[A-Z][a-zA-Z0-9]+$/', $value)) {
-                throw new \InvalidArgumentException('Vendor name must be PascalCase (e.g. MyVendor)');
-            }
-            return $value;
-        });
-
-        $config->namespace = $io->ask('Default Namespace', "{$vendorName}\\{$config->pluginName}");
-        $config->description = $io->ask('Description', '');
-        $config->author = $io->ask('Author', '');
-        $config->email = $io->ask('E-Mail', '');
-
-        $availableVersions = ['6.5', '6.6', '6.7'];
-        $config->shopwareVersions = $io->choice(
-            'Shopware Versions (comma separated for multiple)',
-            $availableVersions,
-            '6.6',
-            true
-        );
-
-        // Sort versions so the highest is first (will be used for master branch)
-        usort($config->shopwareVersions, 'version_compare');
-        $config->shopwareVersions = array_reverse($config->shopwareVersions);
-
-        $io->section('Dev Tooling');
-
-        $config->withPhpUnit = $io->confirm('Include PHPUnit?', false);
-        $config->withPhpStan = $io->confirm('Include PHPStan?', false);
-        $config->withPhpCsFixer = $io->confirm('Include PHP-CS-Fixer?', false);
-        $config->withDocker = $io->confirm('Include Docker config?', false);
-
-        if ($config->withDocker) {
-            $io->note('Fetching latest Dockware tags...');
-            foreach ($config->shopwareVersions as $version) {
-                $tag = $this->fetchLatestDockwareTag($version);
-                if ($tag) {
-                    $config->dockwareTags[$version] = $tag;
-                    $io->writeln(sprintf('  - Found tag <info>%s</info> for version <info>%s</info>', $tag, $version));
-                } else {
-                    $config->dockwareTags[$version] = 'latest';
-                    $io->warning(sprintf('Could not find Dockware tag for version %s, using "latest"', $version));
-                }
-            }
+            return Command::SUCCESS;
         }
 
-        $config->withTypeScript = $io->confirm('Include TypeScript setup?', false);
-        $config->withJetBrainsRunConfigs = $io->confirm('Include JetBrains Run Configurations?', false);
-        $config->withWriterside = $io->confirm('Include Writerside documentation?', false);
-        $config->withGithubActions = $io->confirm('Include GitHub Actions CI?', false);
-        $config->withMakefile = $io->confirm('Include Makefile?', false);
+        if (!$this->ensureDirectoryExists($io, $targetDirectory)) {
+            return Command::FAILURE;
+        }
 
-        $io->section('Plugin Architecture');
+        try {
+            $generator = new PluginGenerator($config, $targetDirectory);
+            $generator->generate();
+        } catch (\RuntimeException $e) {
+            $io->error($e->getMessage());
 
-        $config->withAdminExtension = $io->confirm('Admin Extension (Vue components)?', false);
-        $config->withStorefrontExtension = $io->confirm('Storefront Extension (Twig/SCSS)?', false);
-        $config->withDatabase = $io->confirm('Custom Database Table (Entity, Definition, Migration)?', false);
-        $config->withScheduledTask = $io->confirm('Scheduled Task?', false);
-        $config->withEventSubscriber = $io->confirm('Event Subscriber?', false);
-        $config->withCliCommand = $io->confirm('CLI Command (Symfony Console)?', false);
-        $config->withCustomConfig = $io->confirm('Custom Plugin Config (config.xml)?', false);
+            return Command::FAILURE;
+        }
 
-        $io->section('Scaffolding Depth');
+        $io->success("Plugin '{$config->pluginName}' scaffolded successfully!");
 
-        $config->fullScaffolding = $io->choice(
-                'Scaffolding depth',
-                [
-                    'full' => 'Full (with example DTOs, Services, etc.)',
-                    'structure' => 'Structure only (empty folders & base files)',
-                ],
-                'structure'
-            ) === 'full';
+        return Command::SUCCESS;
+    }
 
+    private function showSummary(SymfonyStyle $io, object $config): void
+    {
         $io->section('Summary');
         $io->definitionList(
             ['Plugin Title' => $config->pluginTitle],
@@ -130,62 +81,21 @@ class CreatePluginCommand extends Command
             ['Shopware Versions' => implode(', ', $config->shopwareVersions)],
             ['Full Scaffolding' => $config->fullScaffolding ? 'Yes' : 'No'],
         );
-
-        if (!$io->confirm('Generate plugin now?', true)) {
-            $io->warning('Aborted.');
-            return Command::SUCCESS;
-        }
-
-        $pluginTargetDirectory = $targetDirectory . DIRECTORY_SEPARATOR . $config->pluginName;
-
-        if (!is_dir($pluginTargetDirectory)) {
-            if (!mkdir($pluginTargetDirectory, 0777, true) && !is_dir($pluginTargetDirectory)) {
-                $io->error(sprintf('Directory "%s" was not created', $pluginTargetDirectory));
-                return Command::FAILURE;
-            }
-        }
-
-        try {
-            $generator = new PluginGenerator($config, $pluginTargetDirectory);
-            $generator->generate();
-        } catch (\RuntimeException $e) {
-            $io->error($e->getMessage());
-            return Command::FAILURE;
-        }
-
-        $io->success("Plugin '{$config->pluginName}' scaffolded successfully!");
-
-        return Command::SUCCESS;
-
     }
 
-    private function fetchLatestDockwareTag(string $majorMinor): ?string
+    private function ensureDirectoryExists(SymfonyStyle $io, string $targetDirectory): bool
     {
-        $url = "https://registry.hub.docker.com/v2/repositories/dockware/dev/tags?page_size=100";
-        $json = @file_get_contents($url);
-        if (!$json) {
-            return null;
+        if (is_dir($targetDirectory)) {
+            return true;
         }
 
-        $data = json_decode($json, true);
-        if (!isset($data['results'])) {
-            return null;
+        if (!mkdir($targetDirectory, 0777, true) && !is_dir($targetDirectory)) {
+            $io->error(sprintf('Directory "%s" was not created', $targetDirectory));
+
+            return false;
         }
 
-        $tags = array_column($data['results'], 'name');
-        $pattern = '/^' . preg_quote($majorMinor, '/') . '\.[0-9]+(\.[0-9]+)?$/';
-
-        $filteredTags = array_filter($tags, function ($tag) use ($pattern) {
-            return preg_match($pattern, $tag);
-        });
-
-        if (empty($filteredTags)) {
-            return null;
-        }
-
-        usort($filteredTags, 'version_compare');
-
-        return end($filteredTags) ?: null;
+        return true;
     }
 
     /**
@@ -193,7 +103,6 @@ class CreatePluginCommand extends Command
      */
     private function resolvePath(string $path): string
     {
-
         if (str_starts_with($path, '/') || preg_match('#^[A-Za-z]:\\\\#', $path) || str_starts_with($path, '\\\\')) {
             return rtrim($path, DIRECTORY_SEPARATOR);
         }

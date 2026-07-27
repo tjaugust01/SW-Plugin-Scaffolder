@@ -2,8 +2,9 @@
 
 namespace ShopwareScaffolding\Generator;
 
+use RuntimeException;
 use ShopwareScaffolding\Config\PluginConfig;
-use ShopwareScaffolding\Template\TemplateRenderer;
+use ShopwareScaffolding\Service\TemplateRenderer;
 
 class PluginGenerator
 {
@@ -11,40 +12,53 @@ class PluginGenerator
     private readonly string $stubsDirectory;
     private string $currentShopwareVersion = '';
     private string $migrationTimestamp = '';
+    private readonly string $targetDirectory;
 
     public function __construct(
         private readonly PluginConfig $config,
-        private readonly string $targetDirectory
+        string $targetDirectory
     ) {
         $this->renderer = new TemplateRenderer();
         $this->stubsDirectory = dirname(__DIR__, 2) . '/templates';
         $this->migrationTimestamp = (string) time();
+        $this->targetDirectory = rtrim($targetDirectory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $config->pluginName;
     }
 
     public function generate(): void
     {
         if (empty($this->config->shopwareVersions)) {
-            throw new \RuntimeException('No Shopware versions selected.');
+            throw new RuntimeException('No Shopware versions selected.');
         }
 
-        $isMultiVersion = count($this->config->shopwareVersions) > 1;
+        $this->ensureDirectoryExists($this->targetDirectory);
 
-        if ($isMultiVersion) {
+        $isMultiVersion = count($this->config->shopwareVersions) > 1;
+        $isGit = $this->config->withGitRepository || $isMultiVersion;
+
+        if ($isGit) {
+            $mainBranchName = 'master';
+            if ($isMultiVersion) {
+                $mainBranchName = $this->config
+                    ->gitBranchNamingConvention
+                    ->branchNameForNewestVersion($this->config->shopwareVersions[0]);
+            }
+
             $this->runGitCommand('init');
-            $this->runGitCommand('checkout -b master');
+            $this->runGitCommand(sprintf('checkout -b %s', escapeshellarg($mainBranchName)));
             $this->runGitCommand('config user.email "scaffolder@example.com"');
             $this->runGitCommand('config user.name "Shopware Scaffolder"');
         }
 
-        // shopwareVersions is already sorted highest first in Command
-        // So the first one is for 'master'
         foreach ($this->config->shopwareVersions as $index => $version) {
             $this->currentShopwareVersion = $version;
-            $branchName = ($index === 0) ? 'master' : $version;
 
-            if ($isMultiVersion) {
+            $branchName = $index === 0
+                ? ($isMultiVersion ? $this->config->gitBranchNamingConvention->branchNameForNewestVersion($version) : 'master')
+                : $version;
+
+            if ($isMultiVersion && $isGit) {
                 if ($index > 0) {
-                    $this->runGitCommand("checkout -b {$branchName}");
+                    $this->runGitCommand(sprintf('checkout -b %s', escapeshellarg($branchName)));
                 }
             }
 
@@ -52,18 +66,18 @@ class PluginGenerator
             $this->generateOptionalFiles();
             $this->generateDirectoryStructure();
 
-            if ($isMultiVersion) {
+            if ($isGit) {
                 $this->runGitCommand('add .');
-                $this->runGitCommand("commit -m \"Scaffold plugin for Shopware {$version}\"");
+                $this->runGitCommand(sprintf('commit -m %s', escapeshellarg("Scaffold plugin for Shopware {$version}")));
 
-                if ($index < count($this->config->shopwareVersions) - 1) {
-                    $this->runGitCommand('checkout master');
+                if ($isMultiVersion && $index < count($this->config->shopwareVersions) - 1) {
+                    $this->runGitCommand(sprintf('checkout %s', escapeshellarg($mainBranchName)));
                 }
             }
         }
 
-        if ($isMultiVersion) {
-            $this->runGitCommand('checkout master');
+        if ($isMultiVersion && $isGit) {
+            $this->runGitCommand(sprintf('checkout %s', escapeshellarg($mainBranchName)));
         }
     }
 

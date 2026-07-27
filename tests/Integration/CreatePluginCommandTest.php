@@ -42,7 +42,9 @@ class CreatePluginCommandTest extends TestCase
             'A test description',  // Description
             'John Doe',            // Author
             'john@example.com',    // E-Mail
-            '6.6',                 // Shopware Version (choice index/value)
+            'n',                   // Multi-Shopware Version Support?
+            'n',                   // Create Git Repository?
+            '6.6',                 // Shopware Version
             'n',                   // Include PHPUnit?
             'n',                   // Include PHPStan?
             'n',                   // Include PHP-CS-Fixer?
@@ -93,7 +95,9 @@ class CreatePluginCommandTest extends TestCase
             'A test description',  // Description
             'John Doe',            // Author
             'john@example.com',    // E-Mail
-            '6.6',                 // Shopware Version (choice index/value)
+            'n',                   // Multi-Shopware Version Support?
+            'y',                   // Create Git Repository?
+            '6.6',                 // Shopware Version
             'y',                   // Include PHPUnit?
             'y',                   // Include PHPStan?
             'y',                   // Include PHP-CS-Fixer?
@@ -175,7 +179,9 @@ class CreatePluginCommandTest extends TestCase
             'A test description',  // Description
             'John Doe',            // Author
             'john@example.com',    // E-Mail
-            '6.6',                 // Shopware Version (choice index/value)
+            'n',                   // Multi-Shopware Version Support?
+            'y',                   // Create Git Repository?
+            '6.6',                 // Shopware Version
             'y',                   // Include PHPUnit?
             'y',                   // Include PHPStan?
             'y',                   // Include PHP-CS-Fixer?
@@ -236,7 +242,9 @@ class CreatePluginCommandTest extends TestCase
             'A test description',  // Description
             'John Doe',            // Author
             'john@example.com',    // E-Mail
-            '6.5',                 // Shopware Version (choice index/value)
+            'n',                   // Multi-Shopware Version Support?
+            'n',                   // Create Git Repository?
+            '6.5',                 // Shopware Version
             'n',                   // Include PHPUnit?
             'n',                   // Include PHPStan?
             'n',                   // Include PHP-CS-Fixer?
