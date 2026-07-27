@@ -77,6 +77,7 @@ class CreatePluginCommand extends Command
 
         $config->withPhpUnit = $io->confirm('Include PHPUnit?', false);
         $config->withPhpStan = $io->confirm('Include PHPStan?', false);
+        $config->withPhpCsFixer = $io->confirm('Include PHP-CS-Fixer?', false);
         $config->withDocker = $io->confirm('Include Docker config?', false);
 
         if ($config->withDocker) {

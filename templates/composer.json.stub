@@ -11,7 +11,7 @@
     ],
     "require": {
         "shopware/core": "~{{minShopwareVersion}}"
-    },
+    },{{requireDev}}
     "extra": {
         "shopware-plugin-class": "{{namespaceEscaped}}\\{{pluginName}}",
         "label": {

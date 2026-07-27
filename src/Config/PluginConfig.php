@@ -18,6 +18,7 @@ class PluginConfig
     // Tooling
     public bool $withPhpUnit = false;
     public bool $withPhpStan = false;
+    public bool $withPhpCsFixer = false;
     public bool $withDocker = false;
     public bool $withTypeScript = false;
     public bool $withJetBrainsRunConfigs = false;

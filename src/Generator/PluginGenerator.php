@@ -101,6 +101,10 @@ class PluginGenerator
             $this->writeStub('phpstan.neon.stub', 'phpstan.neon');
         }
 
+        if ($this->config->withPhpCsFixer) {
+            $this->writeStub('php-cs-fixer.dist.php.stub', '.php-cs-fixer.dist.php');
+        }
+
         if ($this->config->withDocker) {
             $this->writeStub('docker-compose.yml.stub', 'docker-compose.yml');
         }
@@ -249,6 +253,24 @@ class PluginGenerator
      */
     private function buildVariables(): array
     {
+        $requireDevPackages = [];
+        if ($this->config->withPhpUnit) {
+            $requireDevPackages[] = '"phpunit/phpunit": "^10.0"';
+            $requireDevPackages[] = '"symfony/phpunit-bridge": "^6.4"';
+        }
+        if ($this->config->withPhpStan) {
+            $requireDevPackages[] = '"phpstan/phpstan": "^1.10"';
+        }
+        if ($this->config->withPhpCsFixer) {
+            $requireDevPackages[] = '"friendsofphp/php-cs-fixer": "^3.40"';
+        }
+
+        if (empty($requireDevPackages)) {
+            $requireDev = '';
+        } else {
+            $requireDev = "\n    \"require-dev\": {\n        " . implode(",\n        ", $requireDevPackages) . "\n    },";
+        }
+
         $makefileExtensions = '';
         $docsDevelopment = '';
 
@@ -358,6 +380,7 @@ class PluginGenerator
             'routeImport'                => $isLegacyScheduledTask ? 'use Symfony\\Component\\Routing\\Annotation\\Route;' : 'use Symfony\\Component\\Routing\\Attribute\\Route;',
             'routeType'                  => $isLegacyScheduledTask ? 'annotation' : 'attribute',
             'pluginNameLower'            => strtolower($this->config->pluginName),
+            'requireDev'                 => $requireDev,
         ];
     }
 

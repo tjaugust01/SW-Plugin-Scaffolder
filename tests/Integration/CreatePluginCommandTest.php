@@ -45,6 +45,7 @@ class CreatePluginCommandTest extends TestCase
             '6.6',                 // Shopware Version (choice index/value)
             'n',                   // Include PHPUnit?
             'n',                   // Include PHPStan?
+            'n',                   // Include PHP-CS-Fixer?
             'n',                   // Include Docker config?
             'n',                   // Include TypeScript setup?
             'n',                   // Include JetBrains Run Configurations?
@@ -92,6 +93,7 @@ class CreatePluginCommandTest extends TestCase
             '6.6',                 // Shopware Version (choice index/value)
             'y',                   // Include PHPUnit?
             'y',                   // Include PHPStan?
+            'y',                   // Include PHP-CS-Fixer?
             'y',                   // Include Docker config?
             'y',                   // Include TypeScript setup?
             'y',                   // Include JetBrains Run Configurations?
@@ -123,6 +125,7 @@ class CreatePluginCommandTest extends TestCase
         // Tooling
         $this->assertFileExists($pluginPath . '/phpunit.xml');
         $this->assertFileExists($pluginPath . '/phpstan.neon');
+        $this->assertFileExists($pluginPath . '/.php-cs-fixer.dist.php');
         $this->assertFileExists($pluginPath . '/docker-compose.yml');
         $this->assertFileExists($pluginPath . '/tsconfig.json');
         $this->assertFileExists($pluginPath . '/.idea/runConfigurations/Docker_Up.xml');
@@ -172,6 +175,7 @@ class CreatePluginCommandTest extends TestCase
             '6.6',                 // Shopware Version (choice index/value)
             'y',                   // Include PHPUnit?
             'y',                   // Include PHPStan?
+            'y',                   // Include PHP-CS-Fixer?
             'y',                   // Include Docker config?
             'y',                   // Include TypeScript setup?
             'y',                   // Include JetBrains Run Configurations?
@@ -232,6 +236,7 @@ class CreatePluginCommandTest extends TestCase
             '6.5',                 // Shopware Version (choice index/value)
             'n',                   // Include PHPUnit?
             'n',                   // Include PHPStan?
+            'n',                   // Include PHP-CS-Fixer?
             'n',                   // Include Docker config?
             'n',                   // Include TypeScript setup?
             'n',                   // Include JetBrains Run Configurations?
