@@ -6,6 +6,11 @@
             "ShopwareScaffolding\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "ShopwareScaffolding\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "tjaugust01",

@@ -27,5 +27,10 @@
         "psr-4": {
             "{{namespaceEscaped}}\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "{{namespaceEscaped}}\\Tests\\": "tests/"
+        }
     }
 }
