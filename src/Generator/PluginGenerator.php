@@ -88,6 +88,16 @@ class PluginGenerator
             'services.xml.stub',
             'src/Resources/config/services.xml'
         );
+
+        $this->writeStub(
+            'CHANGELOG.md.stub',
+            'CHANGELOG.md'
+        );
+
+        $this->writeStub(
+            'CHANGELOG_de-DE.md.stub',
+            'CHANGELOG_de-DE.md'
+        );
     }
 
     private function generateOptionalFiles(): void

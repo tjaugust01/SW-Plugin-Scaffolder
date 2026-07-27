@@ -71,6 +71,8 @@ class CreatePluginCommandTest extends TestCase
         $this->assertStringContainsString('Plugin \'MyTestPlugin\' scaffolded successfully!', $output);
         $this->assertDirectoryExists($this->testDir . '/MyTestPlugin');
         $this->assertFileExists($this->testDir . '/MyTestPlugin/composer.json');
+        $this->assertFileExists($this->testDir . '/MyTestPlugin/CHANGELOG.md');
+        $this->assertFileExists($this->testDir . '/MyTestPlugin/CHANGELOG_de-DE.md');
     }
 
     public function testExecuteWithAllFeatures(): void
