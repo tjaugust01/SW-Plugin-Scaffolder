@@ -1,0 +1,12 @@
+{% extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_content %}
+    <div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+        <div class="card">
+            <div class="card-body">
+                <h1>{{ name }}</h1>
+                <p>{{ message }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

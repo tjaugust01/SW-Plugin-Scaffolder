@@ -152,6 +152,66 @@ class CreatePluginCommandTest extends TestCase
         $this->assertStringContainsString('messenger.message_handler', $servicesXml);
     }
 
+    public function testExecuteWithFullScaffolding(): void
+    {
+        $application = new Application();
+        $application->addCommand(new CreatePluginCommand());
+
+        $command = $application->find('create:plugin');
+        $commandTester = new CommandTester($command);
+
+        // Simulate interactive input with all options set to yes/active and "full" depth
+        $commandTester->setInputs([
+            'My Test Plugin',      // Plugin Title
+            'MyTestPlugin',        // Plugin Name
+            'MyVendor',            // Vendor Name
+            'MyVendor\\Test',      // Namespace
+            'A test description',  // Description
+            'John Doe',            // Author
+            'john@example.com',    // E-Mail
+            '6.6',                 // Shopware Version (choice index/value)
+            'y',                   // Include PHPUnit?
+            'y',                   // Include PHPStan?
+            'y',                   // Include Docker config?
+            'y',                   // Include TypeScript setup?
+            'y',                   // Include JetBrains Run Configurations?
+            'y',                   // Include Writerside documentation?
+            'y',                   // Include GitHub Actions CI?
+            'y',                   // Include Makefile?
+            'y',                   // Admin Extension?
+            'y',                   // Storefront Extension?
+            'y',                   // Custom Database Table?
+            'y',                   // Scheduled Task?
+            'y',                   // Event Subscriber?
+            'y',                   // CLI Command?
+            'y',                   // Custom Plugin Config?
+            'full',                // Scaffolding depth (full)
+            'y',                   // Generate plugin now?
+        ]);
+
+        $commandTester->execute([
+            '--dir' => $this->testDir,
+        ]);
+
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Plugin \'MyTestPlugin\' scaffolded successfully!', $output);
+
+        $pluginPath = $this->testDir . '/MyTestPlugin';
+        $this->assertDirectoryExists($pluginPath);
+
+        // Full Scaffolding Specific files
+        $this->assertFileExists($pluginPath . '/src/Service/ExampleService.php');
+        $this->assertFileExists($pluginPath . '/src/Service/Dto/ExampleDto.php');
+        $this->assertFileExists($pluginPath . '/src/Storefront/Controller/ExampleController.php');
+        $this->assertFileExists($pluginPath . '/src/Resources/config/routes.xml');
+        $this->assertFileExists($pluginPath . '/src/Resources/views/storefront/page/example.html.twig');
+
+        // Assert services.xml contains ExampleService and ExampleController definitions
+        $servicesXml = file_get_contents($pluginPath . '/src/Resources/config/services.xml');
+        $this->assertStringContainsString('MyVendor\\Test\\Service\\ExampleService', $servicesXml);
+        $this->assertStringContainsString('MyVendor\\Test\\Storefront\\Controller\\ExampleController', $servicesXml);
+    }
+
     public function testExecuteWithLegacyShopwareVersion(): void
     {
         $application = new Application();

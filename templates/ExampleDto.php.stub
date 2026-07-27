@@ -1,0 +1,26 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Service\Dto;
+
+/**
+ * Example DTO for {{pluginName}}.
+ *
+ * @version Shopware {{minShopwareVersion}}
+ */
+class ExampleDto
+{
+    public function __construct(
+        private readonly string $name,
+        private readonly string $message
+    ) {}
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+}

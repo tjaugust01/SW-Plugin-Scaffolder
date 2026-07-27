@@ -1,0 +1,33 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Storefront\Controller;
+
+use {{namespace}}\Service\ExampleService;
+use Shopware\Storefront\Controller\StorefrontController;
+use Symfony\Component\HttpFoundation\Response;
+{{routeImport}}
+
+/**
+ * Example Storefront Controller for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/storefront/add-custom-controller.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+#[Route(defaults: ['_routeScope' => ['storefront']])]
+class ExampleController extends StorefrontController
+{
+    public function __construct(
+        private readonly ExampleService $exampleService
+    ) {}
+
+    #[Route(path: '/{{pluginNameLower}}/example', name: 'frontend.{{pluginNameLower}}.example', methods: ['GET'])]
+    public function showExample(): Response
+    {
+        $dto = $this->exampleService->getExampleData('Shopware Developer');
+
+        return $this->renderStorefront('@{{pluginName}}/storefront/page/example.html.twig', [
+            'name' => $dto->getName(),
+            'message' => $dto->getMessage()
+        ]);
+    }
+}

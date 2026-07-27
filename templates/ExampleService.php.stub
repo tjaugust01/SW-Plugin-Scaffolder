@@ -1,0 +1,22 @@
+<?php declare(strict_types=1);
+
+namespace {{namespace}}\Service;
+
+use {{namespace}}\Service\Dto\ExampleDto;
+
+/**
+ * Example Service for {{pluginName}}.
+ *
+ * @see https://developer.shopware.com/docs/guides/plugins/plugins/plugin-fundamentals/dependency-injection.html
+ * @version Shopware {{minShopwareVersion}}
+ */
+class ExampleService
+{
+    public function getExampleData(string $name): ExampleDto
+    {
+        return new ExampleDto(
+            $name,
+            sprintf('Hello %s, this data was retrieved from the ExampleService!', $name)
+        );
+    }
+}

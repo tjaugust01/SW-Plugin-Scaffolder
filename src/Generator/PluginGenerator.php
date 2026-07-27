@@ -168,6 +168,14 @@ class PluginGenerator
         if ($this->config->withCliCommand || $this->config->fullScaffolding) {
             $this->writeStub('Command.php.stub', "src/Command/{$this->config->pluginName}Command.php");
         }
+
+        if ($this->config->fullScaffolding) {
+            $this->writeStub('ExampleService.php.stub', "src/Service/ExampleService.php");
+            $this->writeStub('ExampleDto.php.stub', "src/Service/Dto/ExampleDto.php");
+            $this->writeStub('ExampleController.php.stub', "src/Storefront/Controller/ExampleController.php");
+            $this->writeStub('routes.xml.stub', "src/Resources/config/routes.xml");
+            $this->writeStub('example.html.twig.stub', "src/Resources/views/storefront/page/example.html.twig");
+        }
     }
 
     private function generateDirectoryStructure(): void
@@ -203,8 +211,10 @@ class PluginGenerator
 
         if ($this->config->fullScaffolding) {
             $directories[] = 'src/Service';
+            $directories[] = 'src/Service/Dto';
+            $directories[] = 'src/Storefront/Controller';
             $directories[] = 'src/Core/Content';
-            $directories[] = 'src/Resources/views';
+            $directories[] = 'src/Resources/views/storefront/page';
             $directories[] = 'src/Resources/public';
         }
 
@@ -285,6 +295,15 @@ class PluginGenerator
             $services[] = '            <tag name="console.command" />';
             $services[] = '        </service>';
         }
+        if ($this->config->fullScaffolding) {
+            $services[] = '        <service id="' . $this->config->namespace . '\\Service\\ExampleService" />';
+            $services[] = '        <service id="' . $this->config->namespace . '\\Storefront\\Controller\\ExampleController" public="true">';
+            $services[] = '            <argument type="service" id="' . $this->config->namespace . '\\Service\\ExampleService" />';
+            $services[] = '            <call method="setContainer">';
+            $services[] = '                <argument type="service" id="service_container" />';
+            $services[] = '            </call>';
+            $services[] = '        </service>';
+        }
 
         if ($isLegacyScheduledTask) {
             $taskHandlerImports = "use Shopware\\Core\\Framework\\DataAbstractionLayer\\EntityRepository;\nuse Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\ScheduledTaskHandler;";
@@ -336,6 +355,9 @@ class PluginGenerator
             'migrationTimestamp'         => $this->migrationTimestamp,
             'taskHandlerImports'         => $taskHandlerImports,
             'taskHandlerClassDefinition' => $taskHandlerClassDefinition,
+            'routeImport'                => $isLegacyScheduledTask ? 'use Symfony\\Component\\Routing\\Annotation\\Route;' : 'use Symfony\\Component\\Routing\\Attribute\\Route;',
+            'routeType'                  => $isLegacyScheduledTask ? 'annotation' : 'attribute',
+            'pluginNameLower'            => strtolower($this->config->pluginName),
         ];
     }
 
