@@ -98,6 +98,8 @@ class PluginGenerator
             'CHANGELOG_de-DE.md.stub',
             'CHANGELOG_de-DE.md'
         );
+
+        $this->writePluginIcon();
     }
 
     private function generateOptionalFiles(): void
@@ -453,6 +455,18 @@ class PluginGenerator
                     $stderr ?: $stdout
                 ));
             }
+        }
+    }
+
+    private function writePluginIcon(): void
+    {
+        $iconBase64 = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gYEBho5U586YwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLm4EAAAAE0lEQVQ4y2NgGAWjYBSMglEwCgYRAAOcAAHNnL2IAAAAAElFTkSuQmCC';
+        $outputPath = $this->targetDirectory . '/src/Resources/config/plugin.png';
+
+        $this->ensureDirectoryExists(dirname($outputPath));
+
+        if (file_put_contents($outputPath, base64_decode($iconBase64)) === false) {
+            throw new \RuntimeException(sprintf('Could not write plugin icon: %s', $outputPath));
         }
     }
 }

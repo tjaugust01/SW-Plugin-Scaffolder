@@ -73,6 +73,7 @@ class CreatePluginCommandTest extends TestCase
         $this->assertFileExists($this->testDir . '/MyTestPlugin/composer.json');
         $this->assertFileExists($this->testDir . '/MyTestPlugin/CHANGELOG.md');
         $this->assertFileExists($this->testDir . '/MyTestPlugin/CHANGELOG_de-DE.md');
+        $this->assertFileExists($this->testDir . '/MyTestPlugin/src/Resources/config/plugin.png');
     }
 
     public function testExecuteWithAllFeatures(): void
