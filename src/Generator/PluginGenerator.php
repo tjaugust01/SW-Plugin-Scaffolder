@@ -279,6 +279,25 @@ class PluginGenerator
             $makefileExtensions .= "up:\n\tdocker-compose up -d\n";
             $makefileExtensions .= "down:\n\tdocker-compose down\n";
             $makefileExtensions .= "ssh:\n\tdocker-compose exec shopware bash\n";
+            $makefileExtensions .= "cache-clear:\n\tdocker-compose exec shopware bin/console cache:clear\n";
+            $makefileExtensions .= "watch-admin:\n\tdocker-compose exec shopware ./bin/watch-administration.sh\n";
+            $makefileExtensions .= "watch-storefront:\n\tdocker-compose exec shopware ./bin/watch-storefront.sh\n";
+            $makefileExtensions .= "build-admin:\n\tdocker-compose exec shopware ./bin/build-administration.sh\n";
+            $makefileExtensions .= "build-storefront:\n\tdocker-compose exec shopware ./bin/build-storefront.sh\n";
+            $makefileExtensions .= "plugin-install:\n\tdocker-compose exec shopware bin/console plugin:refresh\n";
+            $makefileExtensions .= "\tdocker-compose exec shopware bin/console plugin:install --activate --clear-cache " . $this->config->pluginName . "\n";
+            $makefileExtensions .= "plugin-reinstall:\n\tdocker-compose exec shopware bin/console plugin:refresh\n";
+            $makefileExtensions .= "\tdocker-compose exec shopware bin/console plugin:reinstall --activate --clear-cache " . $this->config->pluginName . "\n";
+
+            if ($this->config->withPhpUnit) {
+                $makefileExtensions .= "docker-test:\n\tdocker-compose exec shopware bash -c \"cd /var/www/html/custom/plugins/" . $this->config->pluginName . " && php vendor/bin/phpunit\"\n";
+            }
+            if ($this->config->withPhpStan) {
+                $makefileExtensions .= "docker-stan:\n\tdocker-compose exec shopware bash -c \"cd /var/www/html/custom/plugins/" . $this->config->pluginName . " && php vendor/bin/phpstan analyse\"\n";
+            }
+            if ($this->config->withPhpCsFixer) {
+                $makefileExtensions .= "docker-fix:\n\tdocker-compose exec shopware bash -c \"cd /var/www/html/custom/plugins/" . $this->config->pluginName . " && php vendor/bin/php-cs-fixer fix src\"\n";
+            }
 
             $docsDevelopment .= "## Development with Docker (Dockware)\n\n";
             $docsDevelopment .= "1. Run `docker-compose up -d` to start the environment.\n";
